@@ -1,4 +1,5 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from airport_api_project import settings
 
@@ -104,31 +105,41 @@ class Ticket(models.Model):
         Order, on_delete=models.CASCADE, related_name='tickets'
     )
 
-    def validate_ticket(self):
-        existing_ticket = Ticket.objects.filter(
-            row=self.row, seat=self.seat, flight=self.flight
-        ).first()
-
-        if existing_ticket:
-            if existing_ticket.order == self.order:
-                return False
-            else:
-                return False
-
-        return True
+    @staticmethod
+    def validate_ticket(row, seat, airplane, error):
+        for ticket_attr_value, ticket_attr_name, airplane_attr_name in [
+            (row, "row", "rows"),
+            (seat, "seat", "seats_in_row"),
+        ]:
+            count_attr = getattr(airplane, airplane_attr_name)
+            if not (1 <= ticket_attr_value <= count_attr):
+                raise error(
+                    {
+                        f"Attribute {ticket_attr_name} is out of range. \n"
+                        f"\tAvailable range: "
+                        f"(1, {airplane_attr_name}): 1, {count_attr}."
+                    }
+                )
 
     def clean(self):
-        if not self.validate_ticket():
-            raise ValidationError(
-                "This ticket is already occupied by another order.")
+        Ticket.validate_ticket(
+            self.row,
+            self.seat,
+            self.flight.airplane,
+            ValidationError,
+        )
 
-        if self.row < 1 or self.seat < 1:
-            raise ValidationError(
-                "Row and seat numbers must be positive integers.")
-
-    def save(self, *args, **kwargs):
+    def save(
+            self,
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None,
+    ):
         self.full_clean()
-        super().save(*args, **kwargs)
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )
 
     class Meta:
         ordering = ['row', 'seat', 'flight']
