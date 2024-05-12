@@ -125,8 +125,8 @@ class FlightViewSet(viewsets.ModelViewSet):
         Flight.objects.all().select_related("route", "airplane")
         .annotate(
             tickets_avaliable=(
-                F("airplane__rows") * F("airplane__seats_in_row")
-                - Count("tickets")
+                    F('airplane__rows') * F("airplane__seats_in_row")
+                    - Count("tickets")
             )
         )
     )

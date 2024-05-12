@@ -43,21 +43,6 @@ class Airplane(models.Model):
         return f"{self.name} (Type: {self.airplane_type})"
 
 
-class Crew(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-
-    class Meta:
-        ordering = ['last_name']
-
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-
 class Route(models.Model):
     source = models.ForeignKey(Airport, on_delete=models.CASCADE)
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE)
@@ -79,6 +64,22 @@ class Flight(models.Model):
 
     def __str__(self):
         return f"{self.route} ({self.departure_time} -> {self.arrival_time})"
+
+
+class Crew(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    flights = models.ManyToManyField(Flight)
+
+    class Meta:
+        ordering = ['last_name']
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
 
 class Order(models.Model):

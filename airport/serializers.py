@@ -129,6 +129,7 @@ class FlightDetailSerializer(FlightSerializer):
     taken_tickets = TicketSeatsSerializer(
         source="tickets", many=True, read_only=True
     )
+    crew = CrewSerializer(many=True, read_only=True)
 
     class Meta:
         model = Flight
@@ -138,6 +139,7 @@ class FlightDetailSerializer(FlightSerializer):
             "departure_time",
             "arrival_time",
             "airplane",
+            "crew",
             "taken_tickets"
         )
 
