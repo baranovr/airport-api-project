@@ -30,7 +30,9 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
-        fields = ("id", "name", "airplane_type", "capacity")
+        fields = (
+            "id", "name", "airplane_type", "rows", "seats_in_row", "capacity"
+        )
 
 
 class CrewSerializer(serializers.ModelSerializer):
