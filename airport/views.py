@@ -11,7 +11,8 @@ from rest_framework.viewsets import GenericViewSet
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
-from airport.models import AirplaneType, Crew, Airplane, Flight, Order
+from airport.models import AirplaneType, Crew, Airplane, Flight, Order, \
+    Airport
 
 from airport.serializers import (
     AirplaneTypeSerializer,
@@ -24,8 +25,18 @@ from airport.serializers import (
     RouteSerializer,
     FlightListSerializer,
     OrderSerializer,
-    OrderListSerializer
+    OrderListSerializer, AirportSerializer
 )
+
+
+class AirportViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = Airport.objects.all()
+    serializer_class = AirportSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class AirplaneViewSet(
