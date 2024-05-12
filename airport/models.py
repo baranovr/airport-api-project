@@ -34,7 +34,6 @@ class Airplane(models.Model):
 
     class Meta:
         ordering = ['name']
-        unique_together = (('name', 'airplane_type'),)
 
     @property
     def capacity(self):
