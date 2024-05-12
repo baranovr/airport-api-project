@@ -4,7 +4,7 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def _create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError("Users must have an email address")
         email = self.normalize_email(email)
@@ -13,10 +13,10 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_regular_user(self, email, password, **extra_fields):
+    def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        return self.create_user(email, password, **extra_fields)
+        return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault("is_staff", True)
