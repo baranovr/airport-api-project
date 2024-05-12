@@ -125,8 +125,9 @@ class FlightViewSet(viewsets.ModelViewSet):
         Flight.objects.all().select_related("route", "airplane")
         .annotate(
             tickets_avaliable=(
-                    F('airplane__rows') * F("airplane__seats_in_row")
-                    - Count("tickets")
+                    F('airplane__rows')
+                    * F("airplane__seats_in_row")
+                    - Count("flight_tickets")
             )
         )
     )
@@ -146,20 +147,20 @@ class FlightViewSet(viewsets.ModelViewSet):
 
         if airplane:
             queryset = queryset.filter(
-                airplane__airplane__name__icontains=airplane
+                airplane__name__icontains=airplane
             )
 
         if arrival_time:
             arr_time = datetime.strptime(
                 arrival_time, "%Y-%m-%d"
             ).date()
-            queryset = queryset.filter(arrival_time__day=arr_time)
+            queryset = queryset.filter(arrival_time__date=arr_time)
 
         if departure_time:
             dep_time = datetime.strptime(
                 departure_time, "%Y-%m-%d"
             ).date()
-            queryset = queryset.filter(departure_time__day=dep_time)
+            queryset = queryset.filter(departure_time__date=dep_time)
 
         return queryset.distinct()
 

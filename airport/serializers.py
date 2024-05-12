@@ -74,13 +74,13 @@ class FlightListSerializer(FlightSerializer):
         source="route.destination", read_only=True
     )
     airplane_name = serializers.CharField(
-        source="airplane.name", read_only=True
+        source="airplane__name", read_only=True
     )
     airplane_type = serializers.CharField(
         source="airplane_type.name", read_only=True
     )
     airplane_capacity = serializers.CharField(
-        source="airplane.capacity", read_only=True
+        source="airplane__capacity", read_only=True
     )
     tickets_available = serializers.IntegerField(read_only=True)
 

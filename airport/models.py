@@ -1,4 +1,5 @@
 from django.db import models
+
 from rest_framework.exceptions import ValidationError
 
 from airport_api_project import settings
@@ -44,8 +45,12 @@ class Airplane(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE)
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE)
+    source = models.ForeignKey(
+        Airport,on_delete=models.CASCADE, related_name='source_routes'
+    )
+    destination = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name='destination_routes'
+    )
     distance = models.IntegerField()
 
     class Meta:
@@ -54,7 +59,7 @@ class Route(models.Model):
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
-    airplane = models.ForeignKey(AirplaneType, on_delete=models.CASCADE)
+    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
@@ -90,7 +95,6 @@ class Order(models.Model):
 
     class Meta:
         ordering = ['created_at']
-        unique_together = (('created_at', 'user'),)
 
     def __str__(self):
         return f"{self.created_at} ({self.user})"
@@ -100,27 +104,21 @@ class Ticket(models.Model):
     row = models.IntegerField()
     seat = models.IntegerField()
     flight = models.ForeignKey(
-        Flight, on_delete=models.CASCADE, related_name='tickets'
+        Flight, on_delete=models.CASCADE, related_name='flight_tickets'
     )
     order = models.ForeignKey(
-        Order, on_delete=models.CASCADE, related_name='tickets'
+        Order, on_delete=models.CASCADE, related_name='order_tickets'
     )
 
     @staticmethod
     def validate_ticket(row, seat, airplane, error):
-        for ticket_attr_value, ticket_attr_name, airplane_attr_name in [
-            (row, "row", "rows"),
-            (seat, "seat", "seats_in_row"),
-        ]:
-            count_attr = getattr(airplane, airplane_attr_name)
-            if not (1 <= ticket_attr_value <= count_attr):
-                raise error(
-                    {
-                        f"Attribute {ticket_attr_name} is out of range. \n"
-                        f"\tAvailable range: "
-                        f"(1, {airplane_attr_name}): 1, {count_attr}."
-                    }
-                )
+        for attr, attr_name in [(row, "row"), (seat, "seat")]:
+            max_value = getattr(airplane, f"{attr_name}s_in_{attr_name}")
+            if not (1 <= attr <= max_value):
+                raise error({
+                    f"Attribute {attr_name} is out of range. \n"
+                    f"\tAvailable range: (1, {max_value}): 1, {max_value}."
+                })
 
     def clean(self):
         Ticket.validate_ticket(
