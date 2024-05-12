@@ -14,10 +14,17 @@ from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.models import AirplaneType, Crew, Airplane, Flight, Order
 
 from airport.serializers import (
-    AirplaneTypeSerializer, CrewSerializer, AirplaneSerializer,
-    FlightSerializer, FlightDetailSerializer, RouteListSerializer,
-    RouteDetailSerializer, RouteSerializer, FlightListSerializer,
-    OrderSerializer, OrderListSerializer,
+    AirplaneTypeSerializer,
+    CrewSerializer,
+    AirplaneSerializer,
+    FlightSerializer,
+    FlightDetailSerializer,
+    RouteListSerializer,
+    RouteDetailSerializer,
+    RouteSerializer,
+    FlightListSerializer,
+    OrderSerializer,
+    OrderListSerializer
 )
 
 
