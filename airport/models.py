@@ -56,25 +56,9 @@ class Route(models.Model):
         ordering = ['source', 'destination']
 
 
-class Flight(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE)
-    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
-    departure_time = models.DateTimeField()
-    arrival_time = models.DateTimeField()
-
-    class Meta:
-        ordering = ['departure_time', 'arrival_time']
-        unique_together = (('departure_time', 'arrival_time'),)
-
-    def __str__(self):
-        return f"{self.route} ({self.departure_time} -> {self.arrival_time})"
-
-
 class Crew(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    flights = models.ManyToManyField(Flight)
-
     class Meta:
         ordering = ['last_name']
 
@@ -84,6 +68,21 @@ class Crew(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class Flight(models.Model):
+    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
+    departure_time = models.DateTimeField()
+    arrival_time = models.DateTimeField()
+    crew = models.ManyToManyField(Crew)
+
+    class Meta:
+        ordering = ['departure_time', 'arrival_time']
+        unique_together = (('departure_time', 'arrival_time'),)
+
+    def __str__(self):
+        return f"{self.route} ({self.departure_time} -> {self.arrival_time})"
 
 
 class Order(models.Model):

@@ -42,21 +42,26 @@ class CrewSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
+    source = AirportSerializer(many=False, read_only=True)
+    destination = AirportSerializer(many=False, read_only=True)
+
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance")
 
 
 class RouteListSerializer(RouteSerializer):
+    source = serializers.CharField(source="source.name", read_only=True)
+    destination = serializers.CharField(
+        source="destination.name", read_only=True
+    )
+
     class Meta:
         model = Route
         fields = ("id", "source", "destination")
 
 
 class RouteDetailSerializer(RouteSerializer):
-    source = AirplaneSerializer(many=False, read_only=True)
-    destination = AirplaneSerializer(many=False, read_only=True)
-
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance")
@@ -65,7 +70,15 @@ class RouteDetailSerializer(RouteSerializer):
 class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane")
+        fields = (
+            "id",
+            "route",
+            "crew",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time"
+        )
 
 
 class FlightListSerializer(FlightSerializer):
@@ -153,7 +166,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ("id", "created_at", "user")
+        fields = ("id", "tickets", "created_at", "user")
 
     @transaction.atomic
     def create(self, validated_data):

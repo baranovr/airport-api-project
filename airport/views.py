@@ -76,7 +76,7 @@ class RouteViewSet(
     viewsets.GenericViewSet
 ):
     queryset = Flight.objects.prefetch_related(
-        "route__source, route__destination"
+        "route__source", "route__destination"
     )
     serializer_class = FlightSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
