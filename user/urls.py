@@ -1,4 +1,13 @@
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView
+)
+
 from user.views import CreateUserView, ManageUserView
+
+from django.urls import path
+
 
 urlpatterns = [
     path("register/", CreateUserView.as_view(), name="create"),
