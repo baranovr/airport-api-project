@@ -18,9 +18,9 @@ from airport.models import (
     Flight,
     Order,
     Airport,
-    Route, Ticket
+    Route,
+    Ticket
 )
-
 
 from airport.serializers import (
     AirplaneTypeSerializer,
@@ -36,7 +36,9 @@ from airport.serializers import (
     OrderListSerializer,
     AirportSerializer,
     AirplaneListSerializer,
-    AirplaneDetailSerializer, TicketSerializer
+    AirplaneDetailSerializer,
+    TicketSerializer,
+    TicketDetailSerializer
 )
 
 
@@ -98,6 +100,22 @@ class AirplaneViewSet(
 
         return AirplaneSerializer
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "name",
+                type=OpenApiTypes.STR,
+                description="Filter by name",
+            ),
+            OpenApiParameter(
+                "airplane_type",
+                type=OpenApiTypes.STR,
+                description=(
+                        "Filter by airplane type"
+                ),
+            )
+        ]
+    )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -175,10 +193,10 @@ class FlightViewSet(viewsets.ModelViewSet):
     queryset = (
         Flight.objects.all().select_related("route", "airplane")
         .annotate(
-            tickets_avaliable=(
-                    F('airplane__rows')
+            tickets_available=(
+                    F("airplane__rows")
                     * F("airplane__seats_in_row")
-                    - Count("flight_tickets")
+                    - Count("tickets")
             )
         )
     )
@@ -261,7 +279,10 @@ class TicketViewSet(
     serializer_class = TicketSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
-
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return TicketDetailSerializer
+        return super().get_serializer_class()
 
 
 class OrderViewSet(
