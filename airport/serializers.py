@@ -132,14 +132,28 @@ class FlightListSerializer(FlightSerializer):
 
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
-        data = super(TicketSerializer, self).validate(attrs=attrs)
-        Ticket.validate_ticket(
-            attrs["row"],
-            attrs["seat"],
-            attrs["flight"].airplane,
-            ValidationError,
-        )
-        return data
+        flight = attrs.get("flight")
+        row = attrs.get("row")
+        seat = attrs.get("seat")
+
+        if row < 1 or row > flight.airplane.rows:
+            raise ValidationError(
+                f"The row number must be in the range from 1 to "
+                f"{flight.airplane.rows}"
+            )
+
+        if seat < 1 or seat > flight.airplane.seats_in_row:
+            raise ValidationError(
+                f"The seat number must be in the range from 1 to "
+                f"{flight.airplane.seats_in_row}"
+            )
+
+        if Ticket.objects.filter(row=row, seat=seat, flight=flight).exists():
+            raise ValidationError(
+                "This seat is already occupied on this flight."
+            )
+
+        return attrs
 
     class Meta:
         model = Ticket
@@ -147,10 +161,14 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class TicketListSerializer(TicketSerializer):
-    flight = FlightListSerializer(many=True, read_only=True)
+    flight = FlightListSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight")
 
 
-class TicketSeatsSerializer(TicketSerializer):
+class RowAndSeatSerializer(TicketSerializer):
     class Meta:
         model = Ticket
         fields = ("row", "seat")
@@ -177,15 +195,20 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderListSerializer(OrderSerializer):
     tickets = TicketListSerializer(many=True, read_only=True)
+    user = serializers.CharField(source="user.email", read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ("id", "tickets", "created_at", "user")
 
 
 class FlightDetailSerializer(FlightSerializer):
     route = RouteDetailSerializer(many=False, read_only=True)
     airplane = AirplaneSerializer(many=False, read_only=True)
-    taken_tickets = TicketSeatsSerializer(
+    crew = CrewSerializer(many=True, read_only=True)
+    taken_places = RowAndSeatSerializer(
         source="tickets", many=True, read_only=True
     )
-    crew = CrewSerializer(many=True, read_only=True)
 
     class Meta:
         model = Flight
@@ -196,5 +219,13 @@ class FlightDetailSerializer(FlightSerializer):
             "arrival_time",
             "airplane",
             "crew",
-            "taken_tickets"
+            "taken_places"
         )
+
+
+class TicketDetailSerializer(TicketSerializer):
+    flight = FlightDetailSerializer(read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight")
