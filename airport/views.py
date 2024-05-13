@@ -8,6 +8,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.viewsets import GenericViewSet
 
@@ -45,6 +46,11 @@ from airport.serializers import (
 )
 
 
+class AirportPagination(PageNumberPagination):
+    page_size = 15
+    max_page_size = 100
+
+
 class AirportViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -53,6 +59,12 @@ class AirportViewSet(
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    pagination_class = AirportPagination
+
+
+class AirplaneTypePagination(PageNumberPagination):
+    page_size = 20
+    max_page_size = 100
 
 
 class AirplaneTypeViewSet(
@@ -63,6 +75,12 @@ class AirplaneTypeViewSet(
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    pagination_class = AirplaneTypePagination
+
+
+class AirplanePagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
 
 
 class AirplaneViewSet(
@@ -74,6 +92,7 @@ class AirplaneViewSet(
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    pagination_class = AirplanePagination
 
     @staticmethod
     def change_params_str_to_ints(qs):
@@ -142,6 +161,11 @@ class AirplaneViewSet(
         return super().list(request, *args, **kwargs)
 
 
+class CrewPagination(PageNumberPagination):
+    page_size = 15
+    max_page_size = 100
+
+
 class CrewViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -150,6 +174,12 @@ class CrewViewSet(
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    pagination_class = CrewPagination
+
+
+class RoutePagination(PageNumberPagination):
+    page_size = 20
+    max_page_size = 100
 
 
 class RouteViewSet(
@@ -211,6 +241,11 @@ class RouteViewSet(
         return super().list(request, *args, **kwargs)
 
 
+class FlightPagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
+
+
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = (
         Flight.objects.all().select_related("route", "airplane")
@@ -224,6 +259,7 @@ class FlightViewSet(viewsets.ModelViewSet):
     )
     serializer_class = FlightSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    pagination_class = FlightPagination
 
     def get_queryset(self):
         route = self.request.query_params.get("route", None)
@@ -291,6 +327,11 @@ class FlightViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
+class TicketPagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
+
+
 class TicketViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -307,6 +348,11 @@ class TicketViewSet(
         return super().get_serializer_class()
 
 
+class OrderPagination(PageNumberPagination):
+    page_size = 5
+    max_page_size = 100
+
+
 class OrderViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -317,6 +363,7 @@ class OrderViewSet(
     )
     serializer_class = OrderSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = OrderPagination
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
