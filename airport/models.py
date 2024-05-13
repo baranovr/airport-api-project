@@ -59,6 +59,7 @@ class Route(models.Model):
 class Crew(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+
     class Meta:
         ordering = ['last_name']
 
