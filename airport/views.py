@@ -4,12 +4,8 @@ from django.db.models import F, Count
 
 from drf_spectacular.types import OpenApiTypes
 
-from rest_framework import status
-from rest_framework.response import Response
 from rest_framework import viewsets, mixins
-from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -22,7 +18,7 @@ from airport.models import (
     Flight,
     Order,
     Airport,
-    Ticket, Route
+    Route, Ticket
 )
 
 
@@ -37,7 +33,10 @@ from airport.serializers import (
     RouteSerializer,
     FlightListSerializer,
     OrderSerializer,
-    OrderListSerializer, AirportSerializer
+    OrderListSerializer,
+    AirportSerializer,
+    AirplaneListSerializer,
+    AirplaneDetailSerializer, TicketSerializer
 )
 
 
@@ -51,16 +50,6 @@ class AirportViewSet(
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
-class AirplaneViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet
-):
-    queryset = Airplane.objects.all()
-    serializer_class = AirplaneSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
-
-
 class AirplaneTypeViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -69,6 +58,48 @@ class AirplaneTypeViewSet(
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
+class AirplaneViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Airplane.objects.all()
+    serializer_class = AirplaneSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    @staticmethod
+    def change_params_str_to_ints(qs):
+        """Converts a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in qs.split(",")]
+
+    def get_queryset(self):
+        name = self.request.query_params.get("name")
+        airplane_type = self.request.query_params.get("airplane_type")
+
+        queryset = self.queryset
+
+        if name:
+            queryset.filter(name__icontains=name)
+
+        if airplane_type:
+            queryset.filter(airplane_type__icontains=airplane_type)
+
+        return queryset.distinct()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AirplaneListSerializer
+
+        if self.action == "retrieve":
+            return AirplaneDetailSerializer
+
+        return AirplaneSerializer
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class CrewViewSet(
@@ -93,7 +124,6 @@ class RouteViewSet(
 
     @staticmethod
     def change_params_str_to_ints(qs):
-        """Converts a list of string IDs to a list of integers"""
         return [int(str_id) for str_id in qs.split(",")]
 
     def get_queryset(self):
@@ -219,6 +249,19 @@ class FlightViewSet(viewsets.ModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+
+class TicketViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
 
 
 class OrderViewSet(
