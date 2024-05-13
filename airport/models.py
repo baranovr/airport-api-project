@@ -10,7 +10,7 @@ class Airport(models.Model):
     closest_big_city = models.CharField(max_length=255)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["id"]
 
     def __str__(self):
         return self.name
@@ -20,7 +20,7 @@ class AirplaneType(models.Model):
     name = models.CharField(max_length=100)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["id"]
 
     def __str__(self):
         return self.name
@@ -33,7 +33,7 @@ class Airplane(models.Model):
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["id"]
 
     @property
     def capacity(self):
@@ -45,15 +45,15 @@ class Airplane(models.Model):
 
 class Route(models.Model):
     source = models.ForeignKey(
-        Airport,on_delete=models.CASCADE, related_name='source_routes'
+        Airport, on_delete=models.CASCADE, related_name="source_routes"
     )
     destination = models.ForeignKey(
-        Airport, on_delete=models.CASCADE, related_name='destination_routes'
+        Airport, on_delete=models.CASCADE, related_name="destination_routes"
     )
     distance = models.IntegerField()
 
     class Meta:
-        ordering = ['source', 'destination']
+        ordering = ["source", "destination"]
 
 
 class Crew(models.Model):
@@ -61,7 +61,7 @@ class Crew(models.Model):
     last_name = models.CharField(max_length=100)
 
     class Meta:
-        ordering = ['last_name']
+        ordering = ["id"]
 
     @property
     def full_name(self):
@@ -79,8 +79,8 @@ class Flight(models.Model):
     crew = models.ManyToManyField(Crew)
 
     class Meta:
-        ordering = ['departure_time', 'arrival_time']
-        unique_together = (('departure_time', 'arrival_time'),)
+        ordering = ["id", "departure_time", "arrival_time"]
+        unique_together = (("departure_time", "arrival_time"),)
 
     def __str__(self):
         return f"{self.route} ({self.departure_time} -> {self.arrival_time})"
@@ -93,7 +93,7 @@ class Order(models.Model):
     )
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ["created_at"]
 
     def __str__(self):
         return f"{self.created_at} ({self.user})"
@@ -103,45 +103,64 @@ class Ticket(models.Model):
     row = models.IntegerField()
     seat = models.IntegerField()
     flight = models.ForeignKey(
-        Flight, on_delete=models.CASCADE, related_name='flight_tickets'
+        Flight, on_delete=models.CASCADE, related_name="tickets"
     )
     order = models.ForeignKey(
-        Order, on_delete=models.CASCADE, related_name='order_tickets'
+        Order,
+        on_delete=models.CASCADE,
+        related_name="tickets",
+        null=True,
+        blank=True
     )
 
-    @staticmethod
-    def validate_ticket(row, seat, airplane, error):
-        for attr, attr_name in [(row, "row"), (seat, "seat")]:
-            max_value = getattr(airplane, f"{attr_name}s_in_{attr_name}")
-            if not (1 <= attr <= max_value):
-                raise error({
-                    f"Attribute {attr_name} is out of range. \n"
-                    f"\tAvailable range: (1, {max_value}): 1, {max_value}."
-                })
-
     def clean(self):
-        Ticket.validate_ticket(
-            self.row,
-            self.seat,
-            self.flight.airplane,
-            ValidationError,
-        )
+        if self.row < 1 or self.row > self.flight.airplane.rows:
+            raise ValidationError(
+                f"The row number must be in the range from 1 to "
+                f"{self.flight.airplane.rows}"
+            )
 
-    def save(
-            self,
-            force_insert=False,
-            force_update=False,
-            using=None,
-            update_fields=None,
-    ):
+        if self.seat < 1 or self.seat > self.flight.airplane.seats_in_row:
+            raise ValidationError(
+                f"The seat number must be in the range from 1 to "
+                f"{self.flight.airplane.seats_in_row}"
+            )
+
+        if Ticket.objects.filter(
+                row=self.row,
+                seat=self.seat,
+                flight=self.flight
+        ).exclude(pk=self.pk).exists():
+            raise ValidationError(
+                "This seat is already occupied on this flight."
+            )
+
+    def save(self, *args, **kwargs):
         self.full_clean()
-        return super(Ticket, self).save(
-            force_insert, force_update, using, update_fields
-        )
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def validate_ticket(row, seat, flight):
+        if row < 1 or row > flight.airplane.rows:
+            raise ValidationError(
+                f"The row number must be in the range from 1 to "
+                f"{flight.airplane.rows}"
+            )
+
+        if seat < 1 or seat > flight.airplane.seats_in_row:
+            raise ValidationError(
+                f"The seat number must be in the range from 1 to "
+                f"{flight.airplane.seats_in_row}"
+            )
+
+        if Ticket.objects.filter(row=row, seat=seat, flight=flight).exists():
+            raise ValidationError(
+                "This seat is already occupied on this flight."
+            )
 
     class Meta:
-        ordering = ['row', 'seat', 'flight']
-        unique_together = (('row', 'seat', 'flight'),)
+        ordering = ["id",]
+        unique_together = (("row", "seat", "flight"),)
 
     def __str__(self):
         return f"{self.flight} (r: {self.row}, s: {self.seat})"
