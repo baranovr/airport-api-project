@@ -5,7 +5,10 @@ from django.db.models import F, Count
 from drf_spectacular.types import OpenApiTypes
 
 from rest_framework import viewsets, mixins
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.viewsets import GenericViewSet
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -38,7 +41,7 @@ from airport.serializers import (
     AirplaneListSerializer,
     AirplaneDetailSerializer,
     TicketSerializer,
-    TicketDetailSerializer
+    TicketDetailSerializer, AirplaneImageSerializer
 )
 
 
@@ -98,7 +101,26 @@ class AirplaneViewSet(
         if self.action == "retrieve":
             return AirplaneDetailSerializer
 
+        if self.action == "upload_image":
+            return AirplaneImageSerializer
+
         return AirplaneSerializer
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        permission_classes=[IsAdminUser],
+        url_path="upload-image"
+    )
+    def upload_image(self, request, pk=None):
+        airplane = self.get_object()
+        serializer = self.get_serializer(airplane, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         parameters=[
