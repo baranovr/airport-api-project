@@ -4,15 +4,27 @@ from django.db.models import F, Count
 
 from drf_spectacular.types import OpenApiTypes
 
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework import viewsets, mixins
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
-from airport.models import AirplaneType, Crew, Airplane, Flight, Order, \
-    Airport
+from airport.models import (
+    AirplaneType,
+    Crew,
+    Airplane,
+    Flight,
+    Order,
+    Airport,
+    Ticket, Route
+)
+
 
 from airport.serializers import (
     AirplaneTypeSerializer,
@@ -75,9 +87,7 @@ class RouteViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
-    queryset = Flight.objects.prefetch_related(
-        "route__source", "route__destination"
-    )
+    queryset = Route.objects.all()
     serializer_class = FlightSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
