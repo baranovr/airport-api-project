@@ -108,7 +108,7 @@ docker-compose up
 
 ## 👤 Create Super User
 
-By default, the application redirects guest users for authentication. 
+By default, the application prompts you to create a user who does not have administrator rights.
 To access private pages, you will need to create a `superuser`, this can be done by running the special command and follow further instructions:
 
 ```bash
