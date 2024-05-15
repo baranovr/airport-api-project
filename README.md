@@ -118,7 +118,7 @@ $ python manage.py createsuperuser
 <br />
 <hr>
 
-## To get a viewing token, go to the following endpoints👇:
+## To get your personal token, go to the following endpoints👇:
 
 ### 📋 Registration:
 
