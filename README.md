@@ -186,5 +186,5 @@ $ python manage.py createsuperuser
    |-- manage.py                            # Start the app - Django default start script
    |-- requirements.txt                     # Development modules
    |
-   |-- ************************************************************************
+   |-- *********************************************************************************
 ```
