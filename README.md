@@ -147,7 +147,7 @@ $ python manage.py createsuperuser
    |-- airport/  
    |    |-- management/
    |    |    |-- commands/
-   |    |        |-- wait_for_db.py
+   |    |        |-- wait_for_db.py         # Custom command for waiting db
    |    |
    |    |-- tests/
    |    |    |-- test_airport_api.py        # All test files
