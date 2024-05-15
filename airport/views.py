@@ -9,7 +9,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly
+)
+
 from rest_framework.viewsets import GenericViewSet
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -42,7 +47,8 @@ from airport.serializers import (
     AirplaneListSerializer,
     AirplaneDetailSerializer,
     TicketSerializer,
-    TicketDetailSerializer, AirplaneImageSerializer
+    TicketDetailSerializer,
+    AirplaneImageSerializer
 )
 
 
@@ -58,7 +64,7 @@ class AirportViewSet(
 ):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     pagination_class = AirportPagination
 
 
@@ -74,7 +80,7 @@ class AirplaneTypeViewSet(
 ):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     pagination_class = AirplaneTypePagination
 
 
@@ -91,7 +97,7 @@ class AirplaneViewSet(
 ):
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     pagination_class = AirplanePagination
 
     @staticmethod
