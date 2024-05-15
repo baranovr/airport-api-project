@@ -14,6 +14,9 @@ class Command(BaseCommand):
         while not db_conn:
             try:
                 db_conn = connections["default"]
+                with db_conn.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                    cursor.fetchone()
             except OperationalError:
                 self.stdout.write(
                     self.style.ERROR(
