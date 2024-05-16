@@ -1,5 +1,5 @@
 services:
-  airport:
+  app:
     build:
       context: .
     env_file:
