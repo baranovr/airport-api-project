@@ -95,7 +95,7 @@ $ python manage.py migrate
 For convenient development and transfer of the project to other users, Docker was introduced here.
 The image has been uploaded to Docker Hub:
 
-> Link: https://hub.docker.com/repository/docker/baranovr/airport_api_project-app/gener
+> Link: https://hub.docker.com/repository/docker/baranovr/airport_api_project-app/general
 
 How to use (Docker should be installed)👇:
 
