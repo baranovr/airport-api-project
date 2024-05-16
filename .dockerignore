@@ -1,4 +1,4 @@
 .venv/
-Dockerfile
 .idea
+Dockerfile
 docker-compose.yaml
